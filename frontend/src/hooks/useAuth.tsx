@@ -7,9 +7,6 @@ import {
 } from "react";
 import axios from "axios";
 
-axios.defaults.baseURL = "http://localhost:5000";
-axios.defaults.headers.common["Content-Type"] = "application/json";
-
 interface User {
   _id: string;
   name: string;
@@ -26,56 +23,61 @@ interface AuthContextType {
   refreshProfile: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  loading: true,
-  login: () => {},
-  signOut: () => {},
-  refreshProfile: async () => {},
-});
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({
-  children,
-}: {
-  children: ReactNode;
-}) => {
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-
   const [loading, setLoading] = useState(true);
 
   const refreshProfile = async () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+
     try {
-      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        "http://localhost:5000/api/users/profile",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-      if (!token) return;
+      setUser(response.data.user);
+    } catch (error) {
+      console.error("Profile Error:", error);
 
-      const { data } = await axios.get("/api/users/profile", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
 
-      setUser(data.user);
-    } catch (err) {
-      console.error(err);
+      setUser(null);
+    } finally {
+      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    refreshProfile().finally(() => setLoading(false));
-  }, []);
-
-  const login = (token: string, user: User) => {
+  const login = (token: string, userData: User) => {
     localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(userData));
 
-    setUser(user);
+    setUser(userData);
   };
 
   const signOut = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
 
     setUser(null);
   };
+
+  useEffect(() => {
+    refreshProfile();
+  }, []);
 
   return (
     <AuthContext.Provider
@@ -92,4 +94,12 @@ export const AuthProvider = ({
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+
+  if (!context) {
+    throw new Error("useAuth must be used inside AuthProvider");
+  }
+
+  return context;
+};

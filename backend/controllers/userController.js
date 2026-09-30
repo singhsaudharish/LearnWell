@@ -1,36 +1,86 @@
-const User=require("../models/User");
+const User = require("../models/User");
 
-exports.getProfile=async(req,res)=>{
+// GET /api/users/profile
+const getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select("-password");
 
-res.json({
-user:req.user
-});
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
 
+    res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    console.error("Get profile error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
 };
 
-exports.updateProfile=async(req,res)=>{
+// PUT /api/users/profile
+const updateProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
 
-const {name,bio,avatar}=req.body;
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
 
-const user=await User.findByIdAndUpdate(
+    const { name, email, bio, avatar } = req.body;
 
-req.user._id,
+    if (name !== undefined) {
+      user.name = name;
+    }
 
-{
-name,
-bio,
-avatar
-},
+    if (email !== undefined) {
+      user.email = email;
+    }
 
-{
-new:true
-}
+    if (bio !== undefined) {
+      user.bio = bio;
+    }
 
-).select("-password");
+    if (avatar !== undefined) {
+      user.avatar = avatar;
+    }
 
-res.json({
-message:"Profile Updated",
-user
-});
+    const updatedUser = await user.save();
 
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      user: {
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        bio: updatedUser.bio,
+        avatar: updatedUser.avatar,
+      },
+    });
+  } catch (error) {
+    console.error("Update profile error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to update profile",
+    });
+  }
 };
+
+module.exports = {
+  getProfile,
+  updateProfile,
+};
+

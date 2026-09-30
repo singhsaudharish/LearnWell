@@ -20,6 +20,7 @@ import Index from "./pages/Index";
 import Courses from "./pages/Courses";
 import CodingPage from "./pages/CodingPage";
 
+import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -66,8 +67,10 @@ function AppLayout() {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/courses" element={<Courses />} />
-       <Route path="/topics/codingqa" element={<CodingPage />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/topics/codingqa" element={<CodingPage />} />
     
+        
         <Route path="/profile" element={<Profile />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />

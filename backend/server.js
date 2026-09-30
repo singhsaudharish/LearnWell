@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
@@ -5,12 +6,13 @@ const cookieParser = require("cookie-parser");
 
 const connectDB = require("./config/db");
 
+const feedbackRoutes = require("./routes/feedbackRoutes");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRouters");
 const courseRoutes = require("./routes/courseRouter");
 const enrollmentRoutes = require("./routes/enrollmentRoutes");
 
-dotenv.config();
+
 
 /* =========================
    ENV TEST
@@ -75,7 +77,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/enrollments", enrollmentRoutes);
-
+app.use("/api/feedback", feedbackRoutes);
 /* =========================
    TEST ROUTE
 ========================= */

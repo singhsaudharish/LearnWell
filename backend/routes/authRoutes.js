@@ -3,55 +3,22 @@ const express = require("express");
 const router = express.Router();
 
 const {
-    register,
-    login,
-    forgotPassword,
-    resetPassword,
+  register,
+  verifyEmailOTP,
+  resendVerificationOTP,
+  login,
 } = require("../controllers/authController");
 
+// Create account
+router.post("/register", register);
 
-/* =========================================================
-   REGISTER
-========================================================= */
+// Verify email OTP
+router.post("/verify-email-otp", verifyEmailOTP);
 
-router.post(
-    "/register",
-    register
-);
+// Resend email OTP
+router.post("/resend-verification-otp", resendVerificationOTP);
 
-
-/* =========================================================
-   LOGIN
-========================================================= */
-
-router.post(
-    "/login",
-    login
-);
-
-
-/* =========================================================
-   FORGOT PASSWORD
-========================================================= */
-
-router.post(
-    "/forgot-password",
-    forgotPassword
-);
-
-
-/* =========================================================
-   RESET PASSWORD
-========================================================= */
-
-router.post(
-    "/reset-password",
-    resetPassword
-);
-
-
-/* =========================================================
-   EXPORT
-========================================================= */
+// Login
+router.post("/login", login);
 
 module.exports = router;

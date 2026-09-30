@@ -40,7 +40,7 @@ const Footer = () => {
           <div>
             <h4 className="font-heading font-bold text-foreground">Contact</h4>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-              <li className="flex items-center gap-2"><Mail className="h-4 w-4" /> learnwell997@gmail.com</li>
+              <li className="flex items-center gap-2"><Mail className="h-4 w-4" /> learnwell67@gmail.com</li>
               <li className="flex items-center gap-2"><Phone className="h-4 w-4" /> +91773 8105048</li>
               <li className="flex items-center gap-2"><MapPin className="h-4 w-4" /> Mumbai, India</li>
             </ul>
