@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Auth = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -68,7 +70,7 @@ const formattedOTPTime = `${String(otpMinutes).padStart(2, "0")}:${String(
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/auth/login",
+        `${API_URL}/api/auth/login`,
         {
           email,
           password,
@@ -146,7 +148,7 @@ const formattedOTPTime = `${String(otpMinutes).padStart(2, "0")}:${String(
 
     try {
       await axios.post(
-        "http://localhost:5000/api/auth/register",
+        `${API_URL}/api/auth/register`,
         {
           name,
           email,
@@ -196,7 +198,7 @@ const formattedOTPTime = `${String(otpMinutes).padStart(2, "0")}:${String(
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/auth/verify-email-otp",
+        `${API_URL}/api/auth/verify-email-otp`,
         {
           email,
           otp,
@@ -243,7 +245,7 @@ const formattedOTPTime = `${String(otpMinutes).padStart(2, "0")}:${String(
   const handleResendOTP = async () => {
     try {
       await axios.post(
-        "http://localhost:5000/api/auth/resend-verification-otp",
+        `${API_URL}/api/auth/resend-verification-otp`,
         {
           email,
         }
