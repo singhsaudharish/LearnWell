@@ -1,6 +1,6 @@
 require("dotenv").config();
+
 const express = require("express");
-const dotenv = require("dotenv");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
@@ -12,26 +12,6 @@ const userRoutes = require("./routes/userRouters");
 const courseRoutes = require("./routes/courseRouter");
 const enrollmentRoutes = require("./routes/enrollmentRoutes");
 
-
-
-/* =========================
-   ENV TEST
-========================= */
-
-console.log("========== ENV TEST ==========");
-console.log("EMAIL_USER:", process.env.EMAIL_USER);
-console.log(
-    "EMAIL_PASS:",
-    process.env.EMAIL_PASS ? "LOADED" : "NOT LOADED"
-);
-console.log("==============================");
-
-/* =========================
-   DATABASE
-========================= */
-
-connectDB();
-
 const app = express();
 
 /* =========================
@@ -39,12 +19,15 @@ const app = express();
 ========================= */
 
 app.use(
-    cors({
-        origin: "http://localhost:8080",
-        credentials: true,
-        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization"],
-    })
+  cors({
+    origin: [
+      "http://localhost:8080",
+      "https://YOUR-FRONTEND-VERCEL-DOMAIN.vercel.app",
+    ],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
 );
 
 /* =========================
@@ -56,17 +39,19 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 /* =========================
+   DATABASE
+========================= */
+
+connectDB();
+
+/* =========================
    REQUEST LOGGER
 ========================= */
 
 app.use((req, res, next) => {
-    console.log("\n========== REQUEST ==========");
-    console.log("METHOD:", req.method);
-    console.log("URL:", req.originalUrl);
-    console.log("BODY:", req.body);
-    console.log("=============================\n");
-
-    next();
+  console.log("METHOD:", req.method);
+  console.log("URL:", req.originalUrl);
+  next();
 });
 
 /* =========================
@@ -78,49 +63,56 @@ app.use("/api/users", userRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/enrollments", enrollmentRoutes);
 app.use("/api/feedback", feedbackRoutes);
+
 /* =========================
    TEST ROUTE
 ========================= */
 
 app.get("/", (req, res) => {
-    res.status(200).json({
-        success: true,
-        message: "LearnWell API is running",
-    });
+  res.status(200).json({
+    success: true,
+    message: "LearnWell API is running",
+  });
 });
 
 /* =========================
-   404 HANDLER
+   404
 ========================= */
 
 app.use((req, res) => {
-    res.status(404).json({
-        success: false,
-        message: `Route not found: ${req.method} ${req.originalUrl}`,
-    });
+  res.status(404).json({
+    success: false,
+    message: `Route not found: ${req.method} ${req.originalUrl}`,
+  });
 });
 
 /* =========================
-   ERROR HANDLER
+   ERROR
 ========================= */
 
 app.use((err, req, res, next) => {
-    console.error("========== SERVER ERROR ==========");
-    console.error(err);
-    console.error("==================================");
+  console.error(err);
 
-    res.status(500).json({
-        success: false,
-        message: "Internal server error",
-    });
+  res.status(500).json({
+    success: false,
+    message: "Internal server error",
+  });
 });
 
 /* =========================
-   SERVER
+   VERCEL
 ========================= */
 
-const PORT = process.env.PORT || 5000;
+module.exports = app;
 
-app.listen(PORT, () => {
-    console.log(`Server Running on Port ${PORT}`);
-});
+/* =========================
+   LOCAL DEVELOPMENT
+========================= */
+
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 5000;
+
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
