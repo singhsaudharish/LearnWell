@@ -18,18 +18,33 @@ const app = express();
    CORS
 ========================= */
 
+const allowedOrigins = [
+  "http://localhost:8080",
+  "https://learn-well-rho.vercel.app",
+];
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:8080",
-      "https://YOUR-FRONTEND-VERCEL-DOMAIN.vercel.app",
-    ],
+    origin: function (origin, callback) {
+      // Allow requests with no origin
+      // such as Postman/server-to-server requests
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
+app.options("*", cors());
 /* =========================
    MIDDLEWARE
 ========================= */
