@@ -1,3 +1,4 @@
+
 require("dotenv").config();
 
 const express = require("express");
@@ -23,41 +24,42 @@ const allowedOrigins = [
   "https://learn-well-rho.vercel.app",
 ];
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // Allow requests without an Origin header
-      if (!origin) {
-        return callback(null, true);
-      }
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests without an Origin header
+    if (!origin) {
+      return callback(null, true);
+    }
 
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
 
-      return callback(new Error("Not allowed by CORS"));
-    },
+    console.log("Blocked CORS origin:", origin);
+    return callback(new Error("Not allowed by CORS"));
+  },
 
-    credentials: true,
+  credentials: true,
 
-    methods: [
-      "GET",
-      "POST",
-      "PUT",
-      "PATCH",
-      "DELETE",
-      "OPTIONS",
-    ],
+  methods: [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+  ],
 
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-    ],
-  })
-);
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+  ],
+};
+
+app.use(cors(corsOptions));
 
 /* =========================
-   MIDDLEWARE
+   BODY MIDDLEWARE
 ========================= */
 
 app.use(express.json());
@@ -65,30 +67,24 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 /* =========================
-   DATABASE
-========================= */
-
-connectDB();
-
-/* =========================
    REQUEST LOGGER
 ========================= */
 
 app.use((req, res, next) => {
+  console.log("=================================");
   console.log("METHOD:", req.method);
   console.log("URL:", req.originalUrl);
+  console.log("ORIGIN:", req.headers.origin);
+  console.log("=================================");
+
   next();
 });
 
 /* =========================
-   ROUTES
+   DATABASE
 ========================= */
 
-app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/courses", courseRoutes);
-app.use("/api/enrollments", enrollmentRoutes);
-app.use("/api/feedback", feedbackRoutes);
+connectDB();
 
 /* =========================
    TEST ROUTE
@@ -102,6 +98,16 @@ app.get("/", (req, res) => {
 });
 
 /* =========================
+   API ROUTES
+========================= */
+
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/courses", courseRoutes);
+app.use("/api/enrollments", enrollmentRoutes);
+app.use("/api/feedback", feedbackRoutes);
+
+/* =========================
    404
 ========================= */
 
@@ -113,7 +119,7 @@ app.use((req, res) => {
 });
 
 /* =========================
-   ERROR
+   ERROR HANDLER
 ========================= */
 
 app.use((err, req, res, next) => {
@@ -121,12 +127,12 @@ app.use((err, req, res, next) => {
 
   res.status(500).json({
     success: false,
-    message: "Internal server error",
+    message: err.message || "Internal server error",
   });
 });
 
 /* =========================
-   VERCEL
+   VERCEL EXPORT
 ========================= */
 
 module.exports = app;
