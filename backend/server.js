@@ -49,6 +49,7 @@ const corsOptions = {
     "DELETE",
     "OPTIONS",
   ],
+<<<<<<< HEAD
 
   allowedHeaders: [
     "Content-Type",
@@ -57,6 +58,17 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+=======
+
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+  ],
+};
+
+app.use(cors(corsOptions));
+
+>>>>>>> 209d10c (Update backend)
 
 /* =========================
    BODY MIDDLEWARE
