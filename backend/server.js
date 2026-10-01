@@ -26,8 +26,7 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests without an Origin header
-      // such as Postman/server-to-server requests
+      // Allow requests without Origin
       if (!origin) {
         return callback(null, true);
       }
@@ -36,6 +35,7 @@ app.use(
         return callback(null, true);
       }
 
+      console.log("Blocked CORS origin:", origin);
       return callback(new Error("Not allowed by CORS"));
     },
 
@@ -47,9 +47,6 @@ app.use(
   })
 );
 
-// Explicitly handle preflight requests
-app.options("*", cors());
-
 /* =========================
    Middleware
 ========================= */
@@ -58,20 +55,55 @@ app.use(express.json());
 app.use(cookieParser());
 
 /* =========================
-   Routes
+   Health Check
 ========================= */
 
 app.get("/", (req, res) => {
   res.status(200).json({
+    success: true,
     message: "LearnWell Backend API is running",
   });
 });
+
+/* =========================
+   Database Middleware
+========================= */
+
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error("Database connection failed:", error.message);
+
+    return res.status(500).json({
+      success: false,
+      message: "Database connection failed",
+      error: error.message,
+    });
+  }
+});
+
+/* =========================
+   API Routes
+========================= */
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/enrollments", enrollmentRoutes);
 app.use("/api/feedback", feedbackRoutes);
+
+/* =========================
+   404 Handler
+========================= */
+
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Route not found: ${req.method} ${req.originalUrl}`,
+  });
+});
 
 /* =========================
    Error Handler
@@ -81,28 +113,13 @@ app.use((err, req, res, next) => {
   console.error("SERVER ERROR:", err);
 
   res.status(500).json({
+    success: false,
     message: err.message || "Internal Server Error",
   });
 });
 
 /* =========================
-   Database + Server
+   VERCEL
 ========================= */
-
-const PORT = process.env.PORT || 5000;
-
-const startServer = async () => {
-  try {
-    await connectDB();
-
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
-  } catch (error) {
-    console.error("Failed to start server:", error.message);
-  }
-};
-
-startServer();
 
 module.exports = app;
