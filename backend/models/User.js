@@ -28,10 +28,12 @@ const userSchema = new mongoose.Schema(
 
     emailVerificationOTP: {
       type: String,
+      default: null,
     },
 
     emailVerificationExpire: {
       type: Date,
+      default: null,
     },
 
     avatar: {
@@ -46,10 +48,12 @@ const userSchema = new mongoose.Schema(
 
     resetPasswordToken: {
       type: String,
+      default: null,
     },
 
     resetPasswordExpire: {
       type: Date,
+      default: null,
     },
   },
   {
