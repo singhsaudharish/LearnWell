@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { User, BookOpen, Save, LogOut, Loader2 ,MessageSquare,Star} from "lucide-react";
-import api from "@/lib/api";
+import api from "@/api/axios";
 
 const API_URL =
   import.meta.env.VITE_API_URL || "http://localhost:5000";
