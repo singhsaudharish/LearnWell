@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { User, BookOpen, Save, LogOut, Loader2 ,MessageSquare,Star} from "lucide-react";
+import api from "@/lib/api";
 
 const API_URL =
   import.meta.env.VITE_API_URL || "http://localhost:5000";
@@ -453,26 +454,17 @@ const Profile = () => {
 
           const token = localStorage.getItem("token");
 
-          await axios.post(
-           "${API_URL}/api/feedback",
-              {
-         user: user._id,
-         name: user.name,
-         email: user.email,
-         rating,
-         overallFeedback,
-         likedMost,
-         improvements,
-         newFeatures,
-         suggestions,
-             },
-             
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
+           await api.post("/feedback", {
+             user: user._id,
+             name: user.name,
+             email: user.email,
+             rating,
+             overallFeedback,
+             likedMost,
+             improvements,
+             newFeatures,
+             suggestions,
+            });
 
           toast({
             title: "Thank you for your feedback!",
