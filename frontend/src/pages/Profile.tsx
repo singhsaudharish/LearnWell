@@ -1,18 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { User, BookOpen, Save, LogOut, Loader2 ,MessageSquare,Star} from "lucide-react";
+import { User, BookOpen, Save, LogOut, Loader2, MessageSquare, Star, Settings, X, Pencil } from "lucide-react";
 import api from "@/api/axios";
-
-const API_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 interface EnrolledCourse {
   _id: string;
@@ -36,6 +32,7 @@ const Profile = () => {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [bio, setBio] = useState("");
   const [saving, setSaving] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
 
   const [rating, setRating] = useState(5);
@@ -68,16 +65,7 @@ const Profile = () => {
       if (!user?._id) return;
 
       try {
-        const token = localStorage.getItem("token");
-
-        const res = await axios.get(
-          `${API_URL}/api/enrollments/${user._id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const res = await api.get(`/enrollments/${user._id}`);
 
         console.log("Enrollment response:", res.data);
 
@@ -113,23 +101,14 @@ const Profile = () => {
     setSaving(true);
 
     try {
-      const token = localStorage.getItem("token");
-
-      await axios.put(
-        `${API_URL}/api/users/profile`,
-        {
-          name: displayName,
-          avatar: avatarUrl,
-          bio,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await api.put("/users/profile", {
+        name: displayName.trim(),
+        avatar: avatarUrl.trim(),
+        bio: bio.trim(),
+      });
 
       await refreshProfile();
+      setIsEditing(false);
 
       toast({
         title: "Profile updated!",
@@ -183,80 +162,119 @@ const Profile = () => {
           My Profile
         </h1>
 
-        {/* Profile Card */}
-        <div className="mt-8 rounded-2xl border bg-card p-6 shadow-sm">
-          <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
-            <Avatar className="h-20 w-20 text-2xl">
-              <AvatarImage
-                src={avatarUrl || undefined}
-                alt={displayName}
-              />
-
+        {/* Profile overview and settings */}
+        <div className="mt-8 overflow-hidden rounded-2xl border bg-card shadow-sm">
+          <div className="flex flex-col gap-5 p-6 sm:flex-row sm:items-center">
+            <Avatar className="h-24 w-24 shrink-0 text-2xl">
+              <AvatarImage src={avatarUrl || undefined} alt={displayName} />
               <AvatarFallback className="bg-primary/10 font-bold text-primary">
                 {initials}
               </AvatarFallback>
             </Avatar>
 
-            <div className="w-full flex-1 space-y-4">
-              {/* Name */}
-              <div>
-                <Label htmlFor="displayName">Display Name</Label>
+            <div className="min-w-0 flex-1 text-center sm:text-left">
+              <h2 className="break-words font-heading text-2xl font-bold text-foreground">
+                {displayName || "Your Name"}
+              </h2>
+              <p className="mt-1 break-all text-sm text-muted-foreground">
+                {user.email}
+              </p>
+              <p className="mt-3 whitespace-pre-wrap text-sm text-muted-foreground">
+                {bio || "Add a short bio to tell others about yourself."}
+              </p>
+            </div>
 
-                <Input
-                  id="displayName"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="Your name"
-                  className="mt-1"
-                />
+            <div className="flex shrink-0 flex-wrap justify-center gap-2 sm:justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setIsEditing((current) => !current)}
+              >
+                {isEditing ? (
+                  <X className="mr-2 h-4 w-4" />
+                ) : (
+                  <Settings className="mr-2 h-4 w-4" />
+                )}
+                {isEditing ? "Close Settings" : "Settings"}
+              </Button>
+              <Button variant="ghost" onClick={handleSignOut}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+              </Button>
+            </div>
+          </div>
+
+          {isEditing && (
+            <div className="border-t bg-muted/20 p-6">
+              <div className="mb-5">
+                <h3 className="font-heading text-lg font-semibold text-foreground">
+                  Profile Settings
+                </h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Update the information shown on your LearnWell profile.
+                </p>
               </div>
 
-              {/* Avatar */}
-              <div>
-                <Label htmlFor="avatarUrl">Avatar URL</Label>
+              <div className="grid gap-5">
+                <div>
+                  <Label htmlFor="displayName">Full Name</Label>
+                  <Input
+                    id="displayName"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    placeholder="Your name"
+                    className="mt-2"
+                  />
+                </div>
 
-                <Input
-                  id="avatarUrl"
-                  value={avatarUrl}
-                  onChange={(e) => setAvatarUrl(e.target.value)}
-                  placeholder="https://example.com/avatar.jpg"
-                  className="mt-1"
-                />
+                <div>
+                  <Label htmlFor="avatarUrl">Profile Photo URL</Label>
+                  <Input
+                    id="avatarUrl"
+                    value={avatarUrl}
+                    onChange={(e) => setAvatarUrl(e.target.value)}
+                    placeholder="https://example.com/avatar.jpg"
+                    className="mt-2"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="bio">About Me</Label>
+                  <Textarea
+                    id="bio"
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="Write a little about yourself..."
+                    className="mt-2"
+                    rows={4}
+                  />
+                </div>
               </div>
 
-              {/* Bio */}
-              <div>
-                <Label htmlFor="bio">Bio</Label>
-
-                <Textarea
-                  id="bio"
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  placeholder="Tell us about yourself..."
-                  className="mt-1"
-                  rows={3}
-                />
-              </div>
-
-              {/* Buttons */}
-              <div className="flex gap-3">
-                <Button onClick={handleSave} disabled={saving}>
-                  {saving ? (
-                    <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Save className="mr-1 h-4 w-4" />
-                  )}
-
-                  Save Profile
+              <div className="mt-6 flex flex-col-reverse gap-3 border-t pt-5 sm:flex-row sm:justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={saving}
+                  onClick={() => {
+                    setDisplayName(user.name || "");
+                    setAvatarUrl(user.avatar || "");
+                    setBio(user.bio || "");
+                    setIsEditing(false);
+                  }}
+                >
+                  Cancel
                 </Button>
-
-                <Button variant="outline" onClick={handleSignOut}>
-                  <LogOut className="mr-1 h-4 w-4" />
-                  Sign Out
+                <Button onClick={handleSave} disabled={saving || !displayName.trim()}>
+                  {saving ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="mr-2 h-4 w-4" />
+                  )}
+                  {saving ? "Updating..." : "Update Profile"}
                 </Button>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Enrolled Courses */}
@@ -451,8 +469,6 @@ const Profile = () => {
       onClick={async () => {
         try {
           setSendingFeedback(true);
-
-          const token = localStorage.getItem("token");
 
            await api.post("/feedback", {
              user: user._id,
