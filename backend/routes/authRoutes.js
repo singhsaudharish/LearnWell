@@ -7,6 +7,8 @@ const {
   verifyEmailOTP,
   resendVerificationOTP,
   login,
+  forgotPassword,
+  resetPassword,
 } = require("../controllers/authController");
 
 // Register a new account
@@ -20,5 +22,9 @@ router.post("/resend-verification-otp", resendVerificationOTP);
 
 // Login
 router.post("/login", login);
+
+// Forgot password
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
 
 module.exports = router;

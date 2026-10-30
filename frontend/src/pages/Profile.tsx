@@ -10,6 +10,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { User, BookOpen, Save, LogOut, Loader2 ,MessageSquare,Star} from "lucide-react";
 
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 interface EnrolledCourse {
   _id: string;
   progress: number;
@@ -67,7 +70,7 @@ const Profile = () => {
         const token = localStorage.getItem("token");
 
         const res = await axios.get(
-          `http://localhost:5000/api/enrollments/${user._id}`,
+          `${API_URL}/api/enrollments/${user._id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -112,7 +115,7 @@ const Profile = () => {
       const token = localStorage.getItem("token");
 
       await axios.put(
-        "http://localhost:5000/api/users/profile",
+        `${API_URL}/api/users/profile`,
         {
           name: displayName,
           avatar: avatarUrl,
@@ -451,7 +454,7 @@ const Profile = () => {
           const token = localStorage.getItem("token");
 
           await axios.post(
-           "http://localhost:5000/api/feedback",
+           "${API_URL}/api/feedback",
               {
          user: user._id,
          name: user.name,
