@@ -1,3 +1,4 @@
+
 import {
   createContext,
   useContext,
@@ -23,6 +24,9 @@ interface AuthContextType {
   refreshProfile: () => Promise<void>;
 }
 
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -40,7 +44,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/users/profile",
+        `${API_URL}/api/users/profile`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -48,14 +52,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       );
 
-      setUser(response.data.user);
+      const profile = response.data.user;
+
+      setUser(profile);
+      localStorage.setItem("user", JSON.stringify(profile));
     } catch (error) {
       console.error("Profile Error:", error);
 
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-
-      setUser(null);
+      // Keep the existing session if the server is temporarily unavailable.
+      // Only clear authentication for an invalid/expired token.
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        setUser(null);
+      }
     } finally {
       setLoading(false);
     }
@@ -64,14 +74,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = (token: string, userData: User) => {
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(userData));
-
     setUser(userData);
   };
 
   const signOut = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-
     setUser(null);
   };
 
