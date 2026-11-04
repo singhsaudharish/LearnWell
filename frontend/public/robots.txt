@@ -10,5 +10,8 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
+
 User-agent: *
 Allow: /
+
+Sitemap: https://learn-well-rho.vercel.app/sitemap.xml
